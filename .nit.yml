@@ -1,0 +1,8 @@
+hooks:
+  -
+    prepush:
+      forbidden:
+        - master
+        - develop
+        - development
+        - staging
