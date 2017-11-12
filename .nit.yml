@@ -6,3 +6,6 @@ hooks:
         - develop
         - development
         - staging
+  -
+    prepull:
+    sameBranchOnly: true

@@ -3,6 +3,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+
+[[projects]]
+  branch = "master"
   name = "github.com/withnic/go-gitcmdwrapper"
   packages = ["."]
   revision = "a98d0997d439b53acba65a18ec71adba9ca0982c"
@@ -16,6 +22,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bc8d16330bf238fc83ef9ba6cf962ac594f162b9d22a4d624220614b9301a68e"
+  inputs-digest = "affb2330c31cb506f6cdcf7d772f9006eb206ab27ceea0dd774cbcc347c5c349"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -6,87 +6,39 @@ import (
 	"os"
 	"path/filepath"
 
-	yaml "gopkg.in/yaml.v2"
+	homedir "github.com/mitchellh/go-homedir"
+
+	yaml "gopkg.in/yaml.v1"
 )
 
 const (
-	confName   = ".nit.yml" // need .git same dir
-	recursive  = 10
-	searchName = ".git"
+	confName  = ".nit.yml" // need .git same dir or homedir
+	recursive = 3          //find
 )
 
-// Config is config struct
-type Config struct {
-	Hooks []Hook `yaml:"hooks"`
+type ConfigReader struct {
 }
 
-// Hook is hook struct
-type Hook struct {
-	PrePush PrePush `yaml:"prepush"`
-}
-
-// PrePush is push config struct
-type PrePush struct {
-	Forbiddens []string `yaml:"forbidden"`
-}
-
-func (it *PrePush) canPush(branch string) bool {
-	for _, v := range it.Forbiddens {
-		if v == branch {
-			return false
-		}
-	}
-	return true
-}
-
-func find(files []os.FileInfo) bool {
-	for _, file := range files {
-		if file.IsDir() && file.Name() == searchName {
-			return true
-		}
-	}
-	return false
-}
-
-func recusiveFind(dir string, times int) (string, error) {
-	if times < 0 {
-		return "", errors.New("Not found")
-	}
-	d := filepath.Dir(dir)
-	files, _ := ioutil.ReadDir(d)
-	if find(files) {
-		return d, nil
-	}
-
-	return recusiveFind(d, times-1)
-
-}
-
-func searchDir() (string, error) {
-	dir, _ := os.Getwd()
-	files, _ := ioutil.ReadDir(dir)
-	if find(files) {
-		return dir, nil
-	}
-	return recusiveFind(dir, 3)
-}
-
-func searchConfigFile() (string, error) {
-	dir, err := searchDir()
+// NewLocalConfig return config by user dir
+func (it *ConfigReader) NewGlobalConfig() (*Config, error) {
+	dir, err := homedir.Dir()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-
-	return filepath.Join(dir, confName), nil
-}
-
-// NewConfig returns Config struct and error
-func NewConfig() (*Config, error) {
-	name, err := searchConfigFile()
+	name, err := it.searchConfigFile(dir, 1)
 	if err != nil {
 		return nil, err
 	}
 
+	config, err := it.newConfig(name)
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
+// newConfig returns Config struct and error
+func (it *ConfigReader) newConfig(name string) (*Config, error) {
 	buf, err := ioutil.ReadFile(name)
 	if err != nil {
 		return nil, err
@@ -94,8 +46,65 @@ func NewConfig() (*Config, error) {
 
 	var c Config
 	err = yaml.Unmarshal(buf, &c)
+	return &c, err
+}
+
+// NewLocalConfig returns config
+func (it *ConfigReader) NewLocalConfig() (*Config, error) {
+	dir, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &c, nil
+
+	name, err := it.searchConfigFile(dir, recursive)
+	if err != nil {
+		return nil, err
+	}
+	config, _ := it.newConfig(name)
+	if err != nil {
+		return nil, err
+	}
+	return config, err
+}
+
+// find searches confName
+func (it *ConfigReader) find(files []os.FileInfo) bool {
+	for _, file := range files {
+		if file.Name() == confName {
+			return true
+		}
+	}
+	return false
+}
+
+// recusiveFind returns path and error
+func (it *ConfigReader) recusiveFind(dir string, times int) (string, error) {
+	if times < 0 {
+		return "", errors.New("Not found")
+	}
+	d := filepath.Dir(dir)
+	files, _ := ioutil.ReadDir(d)
+	if it.find(files) {
+		return d, nil
+	}
+
+	return it.recusiveFind(d, times-1)
+}
+
+func (it *ConfigReader) searchDir(dir string, dep int) (string, error) {
+	files, _ := ioutil.ReadDir(dir)
+	if it.find(files) {
+		return dir, nil
+	}
+	return it.recusiveFind(dir, dep)
+}
+
+// searchConfigFile
+func (it *ConfigReader) searchConfigFile(dir string, dep int) (string, error) {
+	dir, err := it.searchDir(dir, dep)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(dir, confName), nil
 }

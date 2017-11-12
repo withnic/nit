@@ -8,8 +8,6 @@ import (
 	gitwrapper "github.com/withnic/go-gitcmdwrapper"
 )
 
-var conf Config
-
 func main() {
 	_, err := gitwrapper.Can()
 	if err != nil {
@@ -25,29 +23,33 @@ func run(args []string) int {
 	if len(args) != 3 {
 		return gitwrapper.Exec(args)
 	}
-	config, err := NewConfig()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, " Error:%s\n", err.Error())
-		return 1
-	}
 
-	cmd := strings.ToLower(args[0])
-	branch := strings.ToLower(args[2])
-
+	cmd, branch := cmdBranchLower(args)
 	// push only
 	if cmd != "push" {
 		return gitwrapper.Exec(args)
 	}
 
-	for _, v := range config.Hooks {
-		if len(v.PrePush.Forbiddens) > 0 {
-			if !v.PrePush.canPush(branch) {
-				err := fmt.Errorf("You Can't allow push %s to %s !!", branch, branch)
-				fmt.Fprintf(os.Stderr, " Error:%s\n", err.Error())
-				return 1
-			}
-		}
+	nit, err := NewNit()
+
+	if nit == nil {
+		return gitwrapper.Exec(args)
+	}
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
+		return 1
+	}
+
+	if _, err := nit.CanPrePush(branch); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
+		return 1
 	}
 
 	return gitwrapper.Exec(args)
+}
+
+// cmdBranchLower returns cmd and branch
+func cmdBranchLower(args []string) (string, string) {
+	return strings.ToLower(args[0]), strings.ToLower(args[2])
 }
