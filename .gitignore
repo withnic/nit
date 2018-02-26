@@ -16,3 +16,4 @@ nit
 .glide/
 
 /vendor
+.idea/

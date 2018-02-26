@@ -11,17 +11,17 @@
   branch = "master"
   name = "github.com/withnic/go-gitcmdwrapper"
   packages = ["."]
-  revision = "a98d0997d439b53acba65a18ec71adba9ca0982c"
+  revision = "a46b6de96056b12206bf9d5a696ab7c82d45a7b0"
 
 [[projects]]
-  branch = "v2"
-  name = "gopkg.in/yaml.v2"
+  branch = "v1"
+  name = "gopkg.in/yaml.v1"
   packages = ["."]
-  revision = "eb3733d160e74a9c7e442f435eb3bea458e1d19f"
+  revision = "9f9df34309c04878acc86042b16630b0f696e1de"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "affb2330c31cb506f6cdcf7d772f9006eb206ab27ceea0dd774cbcc347c5c349"
+  inputs-digest = "9e01f01600ec10429669f9c5e6dd4edb66003559a9bed823ae8c5d2902e0dc74"
   solver-name = "gps-cdcl"
   solver-version = 1

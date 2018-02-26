@@ -1,11 +1,11 @@
 hooks:
   -
     prepush:
-      forbidden:
+      forbids:
         - master
         - develop
         - development
         - staging
   -
     prepull:
-    sameBranchOnly: true
+      sameBranchOnly: true

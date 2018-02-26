@@ -5,13 +5,14 @@ import (
 	"os"
 	"strings"
 
+	"log"
 	gitwrapper "github.com/withnic/go-gitcmdwrapper"
 )
 
 func main() {
 	_, err := gitwrapper.Can()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, " Error:%s\n", err.Error())
+		fmt.Fprintf(os.Stderr, " Error:%v\n", err)
 		os.Exit(1)
 	}
 
@@ -32,21 +33,17 @@ func run(args []string) int {
 
 	nit, err := NewNit()
 
-	if nit == nil {
-		return gitwrapper.Exec(args)
-	}
-
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "Error: %v", err)
 		return 1
 	}
 
-	if _, err := nit.CanPrePush(branch); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
+	if err = nit.Run(branch, cmd, args); err != nil{
+		log.Fatal(err)
 		return 1
 	}
 
-	return gitwrapper.Exec(args)
+	return 0
 }
 
 // cmdBranchLower returns cmd and branch

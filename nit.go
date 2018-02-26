@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+	gitwrapper "github.com/withnic/go-gitcmdwrapper"
+)
 
 type nit struct {
 	configs []Config
@@ -26,8 +31,39 @@ func NewNit() (*nit, error) {
 	}, nil
 }
 
-// CanPrePush returns bool and error
-func (it *nit) CanPrePush(branch string) (bool, error) {
+func (it *nit) Run(branch string, cmd string, args []string) error{
+	switch cmd {
+	case "push":
+		if err := it.pushProc(branch, args); err != nil {
+			return err
+		}
+	case "pull":
+	case "commit":
+	case "checkout":
+	}
+
+
+	return nil
+}
+
+func (it *nit) pushProc(branch string, args []string) error {
+	if _, err := it.prePush(branch); err != nil {
+		return err
+	}
+
+	if ret := gitwrapper.Exec(args); ret != 0 {
+		return errors.New("Exec Error")
+	}
+
+	if _, err := it.afterPush(branch); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// PrePush returns bool and error
+func (it *nit) prePush(branch string) (bool, error) {
 	if len(it.configs) == 0 {
 		return true, nil
 	}
@@ -36,12 +72,22 @@ func (it *nit) CanPrePush(branch string) (bool, error) {
 		for _, v := range config.Hooks {
 			if len(v.PrePush.Forbiddens) > 0 {
 				if !v.PrePush.canPush(branch) {
-					err := fmt.Errorf("You Can't allow push %s to %s !!", branch, branch)
+					err := fmt.Errorf("you can't allow push %s to %s", branch, branch)
 					return false, err
 				}
 			}
 		}
 	}
+
+	return true, nil
+}
+
+// AfterPush returns bool and error
+func (it *nit) afterPush(branch string) (bool, error) {
+	if len(it.configs) == 0 {
+		return true, nil
+	}
+
 
 	return true, nil
 }

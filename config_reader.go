@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	homedir "github.com/mitchellh/go-homedir"
-
 	yaml "gopkg.in/yaml.v1"
+
+	homedir "github.com/mitchellh/go-homedir"
 )
 
 const (
